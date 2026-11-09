@@ -1,4 +1,4 @@
-# charon-research
+# charon-research-skills
 
 面向实际科研工作的 AI agent skills。让重复工作更省力，让修改过程可核查。
 
@@ -10,7 +10,7 @@ Practical AI agent skills for research workflows, with changes you can review an
 
 ### 关于这个仓库
 
-`charon-research` 收集和维护可复用的科研技能。每个技能围绕具体任务组织操作说明、辅助脚本和参考资料，由具备相应工具能力的 AI agent 执行。
+`charon-research-skills` 收集和维护可复用的科研技能。每个技能围绕具体任务组织操作说明、辅助脚本和参考资料，由具备相应工具能力的 AI agent 执行。
 
 目前从论文投稿准备开始，后续将逐步扩展其他科研工作场景。尚未实现的技能不会列为已有功能。
 
@@ -84,7 +84,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 每个技能独立存放于 `skills/` 下，测试位于 `tests/`。后续新增技能沿用这一组织方式。
 
 ```text
-charon-research/
+charon-research-skills/
 ├── README.md
 ├── .gitignore
 ├── requirements.txt
@@ -109,7 +109,7 @@ charon-research/
 
 ### About
 
-`charon-research` collects reusable skills for research work. Each skill combines task instructions, helper scripts, and references for an AI agent with the necessary tools.
+`charon-research-skills` collects reusable skills for research work. Each skill combines task instructions, helper scripts, and references for an AI agent with the necessary tools.
 
 The collection currently starts with manuscript submission preparation. Additional research workflows will be added over time; planned skills are not presented as existing capabilities.
 
@@ -186,7 +186,7 @@ Formatting properties, structural integrity, rendered fonts, and visual review a
 Each skill lives in its own directory under `skills/`, with tests in `tests/`. Additional skills will follow the same layout.
 
 ```text
-charon-research/
+charon-research-skills/
 ├── README.md
 ├── .gitignore
 ├── requirements.txt
