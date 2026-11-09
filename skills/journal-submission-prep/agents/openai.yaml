@@ -1,4 +1,0 @@
-interface:
-  display_name: "期刊投稿格式与材料准备"
-  short_description: "检索期刊要求，复用本稿事实，调整格式并回读核验字体、行距与标题"
-  default_prompt: "请使用 $journal-submission-prep，根据目标期刊的当前官方要求检查并调整我的稿件，保留原件，另建目录交付投稿包。"
