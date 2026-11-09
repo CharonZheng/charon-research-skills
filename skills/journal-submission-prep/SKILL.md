@@ -2,12 +2,14 @@
 name: journal-submission-prep
 description: Prepare existing research manuscripts for a named journal by finding current official requirements, adapting Word formatting, and assembling submission materials with evidence-backed checks. Use for initial submissions, reformatting for another journal, or editorial technical-check corrections including 投稿格式、转投、技术退修 and 投稿材料准备. Does not choose a journal or write research from scratch.
 metadata:
-  version: "0.2"
+  version: "0.2.1"
 ---
 
 # 期刊投稿格式与材料准备
 
 用户给出期刊名字即可开始检索；给出稿件后继续审计、修改和交付。默认中文沟通，保留稿件语言。搜索关键词只含期刊与政策，不包含未公开标题、作者、稿件 ID 或私人投稿链接。
+
+开始实际处理前检查本次需要的文件访问、官网检索、Python 3.10+/lxml 和文档渲染能力；仅检索期刊要求时不因缺少 Word 工具而停止，使用 PDF 自动筛查时再检查 pdfplumber。优先使用当前环境已有工具，必要缺项集中说明其影响；技能安装成功不代表这些工具已具备。规则、事实和格式计划由 agent 建立，不要求用户手写 JSON。安装目录可能不同于源码仓库，辅助文件和命令始终以当前 SKILL.md 所在目录定位。
 
 ## 识别任务
 
@@ -88,6 +90,8 @@ python scripts/submission.py manifest OUTPUT/staging --out OUTPUT/package-manife
 此命令只记录现有文件与哈希，不判断材料是否齐全或生成附件。私人事实笔记、旧稿、临时渲染文件不要混入投稿包。
 
 交付实际文件、逐项检查表、修改记录及待补事实。结果分为 pass、fail、needs_confirmation、not_applicable、not_checked；不以总分宣称“可投稿”。
+
+用户首先看到修改稿和本次实际需要的投稿材料链接，以及简短的修改与待办说明。提供可直接阅读的 `检查报告.md`，写清已改内容、检查结果和未解决问题；存在必要缺项时再单列待确认清单，不生成空白占位材料。详细 JSON、格式契约和机器日志放在检查记录目录，用户无需阅读它们才能理解结果。核心格式、渲染字体和视觉验证的结论分别列出。
 
 ## 复用来源
 
