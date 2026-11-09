@@ -1,0 +1,22 @@
+# Local environments and caches
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+.pytest_cache/
+
+# Private research inputs and generated outputs
+/private/
+/outputs/
+/dist/
+*.docx
+*.pdf
+*.xlsx
+*.csv
+manuscript-facts*.json
+submission-facts*.json
+observations*.json
+questions*.json
