@@ -3,7 +3,7 @@ name: journal-submission-prep
 description: Prepare existing research manuscripts for a named journal by finding current official requirements, adapting Word formatting, and assembling submission materials with evidence-backed checks. Use for initial submissions, reformatting for another journal, or editorial technical-check corrections including 投稿格式、转投、技术退修 and 投稿材料准备. Does not choose a journal or write research from scratch.
 license: MIT
 metadata:
-  version: "0.3.0"
+  version: "0.3.1"
 ---
 
 # 期刊投稿格式与材料准备
@@ -108,4 +108,4 @@ python scripts/submission.py readiness OUTPUT/manuscript.docx --review OUTPUT/de
 
 官方核验流程改编自 MIT 许可的 K-Dense venue-templates，见 [上游来源](references/upstream.md)。配套代码为本项目实现，不含许可不明项目代码。不内置声称现行有效的期刊数值大全。
 
-原创代码按 [MIT](LICENSE) 分发，保留 [第三方许可](THIRD_PARTY_LICENSES.txt)。公开仓库的 tests/examples 为合成软件验证，不包含私人论文或投稿邮件；不作为真实期刊规范。
+原创代码按 [MIT](LICENSE) 分发，保留 [第三方许可](THIRD_PARTY_LICENSES.txt)。合成测试与示例保留在公开仓库的 v0.3.0 标签中；当前分发仅含使用所需文件。测试示例不作为真实期刊规范。

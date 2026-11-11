@@ -1,4 +1,0 @@
-# Test/demo dependencies; production DOCX helpers only require lxml.
-lxml>=5.2,<7
-python-docx>=1.1,<2
-pdfplumber>=0.11,<0.12
