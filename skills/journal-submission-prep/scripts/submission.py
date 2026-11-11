@@ -6,55 +6,36 @@ import argparse
 from collections import Counter
 from datetime import date
 import json
-import os
 from pathlib import Path
 import re
 import sys
-import tempfile
 import zipfile
 
-from lxml.etree import XMLSyntaxError
+from report_io import available, json_out, publish, read_json
+
+# Keep diagnostics available even when this interpreter cannot load DOCX dependencies.
+if __name__ == '__main__' and len(sys.argv) > 1 and sys.argv[1] in {'doctor', 'readiness'}:
+    if sys.argv[1] == 'doctor':
+        from doctor import main as entry
+    else:
+        from readiness import main as entry
+    sys.exit(entry(sys.argv[2:]))
+
+if sys.version_info < (3, 10):
+    raise SystemExit('Python 3.10+ is required. Run scripts/doctor.py with an available interpreter to inspect capabilities.')
+
+try:
+    from lxml import etree as E
+    from lxml.etree import XMLSyntaxError
+except (ImportError, OSError):
+    raise SystemExit('This interpreter cannot load lxml.etree. Run scripts/doctor.py; select an existing Python 3.10+ environment with working lxml.')
 
 from docx_tools import NS, apply_operations, audit, digest, load, parse, tag, verify, write_docx
 from formatting import check_contract, formatting_parts, match_format, same, story_part
-from lxml import etree as E
 from workflow import consolidate, compare_profiles
 
 CHECKS = {"required_section", "forbidden_section", "section_order", "max_heading_level",
           "max_heading_characters", "word_limit", "display_limit", "manual"}
-
-
-def read_json(path):
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError("JSON root must be an object")
-    return data
-
-
-def available(path, inputs=()):
-    p = Path(path)
-    if p.is_symlink() or p.exists():
-        raise ValueError(f"Output already exists: {p}")
-    if p.resolve() in {Path(i).resolve() for i in inputs}:
-        raise ValueError("Output aliases an input")
-    return p
-
-
-def publish(path, writer):
-    """Create an output exclusively; never replace an existing file."""
-    path = available(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(prefix=".submission-", dir=path.parent)
-    os.close(fd)
-    try:
-        writer(Path(tmp))
-        os.link(tmp, path)
-    finally:
-        Path(tmp).unlink(missing_ok=True)
-
-
-def json_out(path, data):
-    publish(path, lambda p: p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"))
 
 
 def profile(path):
@@ -209,9 +190,12 @@ def check_document(path, data, sources):
                 detail = {"reason": "Unaccepted revisions may affect the reading view", "finding": detail}
         results.append({"id": rule["id"], "description": rule["description"], "mandatory": rule["mandatory"],
                         "status": status, "detail": detail, "source_ids": rule["source_ids"]})
+    required = [r['status'] for r in results if r['mandatory']]
+    status = 'fail' if 'fail' in required else 'pass' if all(s in {'pass', 'not_applicable'} for s in required) else 'incomplete'
     return {"journal": data["journal"], "article_type": data["article_type"], "stage": data["stage"],
             "profile_checked_on": data["checked_on"], "manuscript_sha256": report["sha256"],
             "results": results, "summary": dict(Counter(r["status"] for r in results)),
+            "required_checks_status": status,
             "limitations": report["limitations"] + ["Profile sources were not fetched or verified by this offline script."]}
 
 
@@ -300,8 +284,17 @@ def format_document(args):
 
 
 def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in {'doctor', 'readiness'}:
+        if argv[0] == 'doctor':
+            from doctor import main as entry
+        else:
+            from readiness import main as entry
+        return entry(argv[1:])
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser('doctor', help='Inspect Python, dependencies, rendering tools and fonts', add_help=False)
+    sub.add_parser('readiness', help='Aggregate hash-bound delivery evidence', add_help=False)
     for name in ("audit", "check", "format"):
         p = sub.add_parser(name); p.add_argument("input", type=Path); p.add_argument("--out", type=Path, required=True)
         if name in ("check", "format"):
@@ -334,7 +327,7 @@ def main(argv=None):
         elif args.command == "check":
             data, sources = profile(args.profile)
             result = check_document(args.input, data, sources)
-            code = 1 if any(r["mandatory"] and r["status"] == "fail" for r in result["results"]) else 0
+            code = {'pass': 0, 'fail': 1, 'incomplete': 3}[result['required_checks_status']]
         elif args.command == "verify":
             result = verify(args.before, args.after); code = 0 if result["passed"] else 1
         elif args.command == 'format-audit':
@@ -345,6 +338,7 @@ def main(argv=None):
         elif args.command == 'layout':
             from layout_check import check_pdf
             result = check_pdf(args.input, args.font_family); code = 0 if result['automated_triage_clear'] else 1
+            result['input_sha256'] = digest(args.input.read_bytes())
         else:
             directory = args.directory.resolve()
             if args.directory.is_symlink() or not directory.is_dir() or Path(args.out).resolve().is_relative_to(directory):

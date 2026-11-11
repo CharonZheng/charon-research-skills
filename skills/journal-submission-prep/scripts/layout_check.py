@@ -26,7 +26,7 @@ def check_pdf(path, font_families=()):
         return ''.join(c for c in re.sub(r'^[A-Z]{6}\+', '', value).casefold() if c.isalnum())
     missing = [family for family in font_families if not any(normal(family) in normal(font) for font in fonts)]
     findings.extend({'kind': 'expected_font_absent', 'family': f, 'status': 'needs_confirmation'} for f in missing)
-    return {'pages': count, 'fonts': sorted(fonts), 'findings': findings,
+    return {'pages': count, 'fonts': sorted(fonts), 'expected_font_families': list(font_families), 'findings': findings,
             'automated_triage_clear': not findings, 'visual_validation': 'not_checked',
             'limitations': ['No automated check can establish absence of overlap, clipped equations, missing glyph outlines or bad page breaks.',
                             'PDF font-name presence does not prove every glyph uses the intended font; inspect pages and substitutions.']}

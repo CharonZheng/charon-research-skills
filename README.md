@@ -41,7 +41,9 @@ DO_NOT_TRACK=1 npx skills add CharonZheng/charon-research-skills
 - `SKILL.md`：给 agent 读取的执行入口。
 - 其他必要脚本、参考资料与第三方许可随技能保存，按需使用。
 
-本仓库只分发使用所需内容，开发测试与私人研究材料不随下载包提供。各技能的复用来源和第三方许可见其目录；原创代码尚未指定仓库级开源许可。
+技能目录只包含使用所需内容；`tests/`、`examples/` 和 CI 在仓库中独立保存，便于公开复现。选择性安装单个 skill 时无需这些开发文件。私人研究材料不进入仓库。
+
+原创代码使用 [MIT 许可](LICENSE)。各技能的复用来源与第三方许可见其目录。验证方法见 [测试与合成示例](examples/README.md)。
 
 ## English
 
@@ -79,4 +81,6 @@ Each skill lives in `skills/<skill-name>/`:
 - `SKILL.md`: the execution entry point for agents.
 - Required scripts, references, and third-party licenses are kept with the skill and used as needed.
 
-Only files needed to use the skills are distributed here. Development tests and private research materials are excluded. Attribution and third-party licenses are kept in each skill directory; a repository-level open-source license for the original code has not yet been selected.
+Skill directories contain runtime files only. Public `tests/`, `examples/`, and CI are kept separately for reproducibility and are not required for selective skill installation. Private research materials are excluded.
+
+Original code is [MIT-licensed](LICENSE); attribution and third-party licenses remain in each skill directory. See [tests and synthetic examples](examples/README.md).

@@ -75,6 +75,8 @@ applicability=applicable/not_applicable/unknown，后两者需要 applicability_
 ## CLI 与退出码
 
 ```bash
+python scripts/doctor.py --mode docx
+python scripts/submission.py doctor --mode render --font-family "Arial" --out environment.json
 python scripts/submission.py audit INPUT.docx --out audit.json
 python scripts/submission.py check INPUT.docx --profile requirements.json --out check.json
 python scripts/submission.py format INPUT.docx --profile requirements.json --plan format-plan.json --out manuscript.docx --log format-log.json --dry-run
@@ -85,8 +87,11 @@ python scripts/submission.py format-audit INPUT.docx --contract format-contract.
 python scripts/submission.py layout INPUT.pdf --font-family "Arial" --out layout-check.json
 python scripts/submission.py facts --observations observations.json --out manuscript-facts.json --questions questions.json
 python scripts/submission.py compare-profiles requirements-old.json requirements-new.json --out requirements-diff.json
+python scripts/submission.py readiness INPUT.docx --review delivery-review.json --out delivery-status.json --report 检查报告.md
 ```
 
-0=命令完成（check 可能仍有待确认/未检查）；1=check 的强制 fail、verify 失败、format-audit 未全通过或 layout 有候选问题；2=无效输入/拒绝操作。facts 的 0 只表示队列生成成功，不代表声明已确认。错误摘要写 stderr。manifest 输出须在 staging 之外，拒绝链接；它不生成压缩包、检查隐私或材料齐全性。报告也拒绝覆盖：重跑请用新目录或新的报告名。
+0=该命令范围内完成；1=check 的强制 fail、verify 失败、format-audit 未全通过或 layout 有候选问题；2=无效输入/拒绝操作；3=check 的强制规则仍待确认/未检查、doctor 能力未确认或 readiness 未完成。check 新增 required_checks_status=pass/fail/incomplete；非强制问题仍须看逐项结果。facts 的 0 只表示队列生成成功，不代表声明已确认。错误摘要写 stderr。manifest 输出须在 staging 之外，拒绝链接；它不生成压缩包、检查隐私或材料齐全性。报告也拒绝覆盖：重跑请用新目录或新的报告名。
+
+doctor 不依赖 lxml 即可诊断当前解释器。readiness 的六类状态、证据结构与自动/人工边界见 [交付状态](readiness.md)。layout CLI 输出包含 PDF input_sha256 和 expected_font_families，用于绑定本次结果；仍不证明所有字形或视觉合格。
 
 `format-log` 记录输入哈希、操作、source IDs、before/predicted_after、保存后 readback 和结构比较结果。回读不通过拒绝发布，但只证明计划中的属性，不代表全稿已覆盖。视觉状态始终 not_checked，agent 渲染后另在最终报告登记结果，不能让脚本冒称已看页面。事实复用和问题队列详见 [事实记录](facts.md)；基础格式完整覆盖详见 [格式契约](formatting.md)。

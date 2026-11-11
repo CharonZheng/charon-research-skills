@@ -1,8 +1,9 @@
 ---
 name: journal-submission-prep
 description: Prepare existing research manuscripts for a named journal by finding current official requirements, adapting Word formatting, and assembling submission materials with evidence-backed checks. Use for initial submissions, reformatting for another journal, or editorial technical-check corrections including 投稿格式、转投、技术退修 and 投稿材料准备. Does not choose a journal or write research from scratch.
+license: MIT
 metadata:
-  version: "0.2.1"
+  version: "0.3.0"
 ---
 
 # 期刊投稿格式与材料准备
@@ -10,6 +11,8 @@ metadata:
 用户给出期刊名字即可开始检索；给出稿件后继续审计、修改和交付。默认中文沟通，保留稿件语言。搜索关键词只含期刊与政策，不包含未公开标题、作者、稿件 ID 或私人投稿链接。
 
 开始实际处理前检查本次需要的文件访问、官网检索、Python 3.10+/lxml 和文档渲染能力；仅检索期刊要求时不因缺少 Word 工具而停止，使用 PDF 自动筛查时再检查 pdfplumber。优先使用当前环境已有工具，必要缺项集中说明其影响；技能安装成功不代表这些工具已具备。规则、事实和格式计划由 agent 建立，不要求用户手写 JSON。安装目录可能不同于源码仓库，辅助文件和命令始终以当前 SKILL.md 所在目录定位。
+
+先用 `python scripts/doctor.py --mode docx` 检查实际解释器及依赖；渲染时用 `--mode render --font-family "目标字体"`，只查期刊要求用 `--mode requirements`。此脚本仅用标准库即可报告缺项，不自动安装。工具存在或 Fontconfig 匹配不是渲染成功，宿主另有渲染工具时核实后使用；不要把缺少某一 CLI 等同于宿主完全不能渲染。
 
 ## 识别任务
 
@@ -91,8 +94,18 @@ python scripts/submission.py manifest OUTPUT/staging --out OUTPUT/package-manife
 
 交付实际文件、逐项检查表、修改记录及待补事实。结果分为 pass、fail、needs_confirmation、not_applicable、not_checked；不以总分宣称“可投稿”。
 
-用户首先看到修改稿和本次实际需要的投稿材料链接，以及简短的修改与待办说明。提供可直接阅读的 `检查报告.md`，写清已改内容、检查结果和未解决问题；存在必要缺项时再单列待确认清单，不生成空白占位材料。详细 JSON、格式契约和机器日志放在检查记录目录，用户无需阅读它们才能理解结果。核心格式、渲染字体和视觉验证的结论分别列出。
+每份交付 DOCX 按 [交付状态与证据](references/readiness.md) 由 agent 建立 `delivery-review.json`，绑定当前稿件、机器报告、PDF 和逐页图像哈希，记录实际完成的规则核验、材料与视觉复核。运行：
+
+```bash
+python scripts/submission.py readiness OUTPUT/manuscript.docx --review OUTPUT/delivery-review.json --out OUTPUT/delivery-status.json --report OUTPUT/检查报告.md
+```
+
+六类检查缺失、未知或证据变化时保持 incomplete；fail 为 blocked。视觉记录不能由自动筛查代填，未逐页看过不能标 pass。ready 仅表示该稿件记录中的核验齐全，不保证期刊接收。纯格式修改用 `verify` 报告；经授权的改文、匿名化或重排需单独记录前后映射并使用有证据的人工完整性复核，不放宽原 `verify`。
+
+用户首先看到修改稿和本次实际需要的投稿材料链接，以及简短的修改与待办说明。汇总命令生成的 `检查报告.md` 列出检查状态，agent 再依据实际修改记录补充已改内容与待办；存在必要缺项时再单列待确认清单，不生成空白占位材料。详细 JSON、格式契约和机器日志放在检查记录目录，用户无需阅读它们才能理解结果。核心格式、渲染字体和视觉验证的结论分别列出。
 
 ## 复用来源
 
 官方核验流程改编自 MIT 许可的 K-Dense venue-templates，见 [上游来源](references/upstream.md)。配套代码为本项目实现，不含许可不明项目代码。不内置声称现行有效的期刊数值大全。
+
+原创代码按 [MIT](LICENSE) 分发，保留 [第三方许可](THIRD_PARTY_LICENSES.txt)。公开仓库的 tests/examples 为合成软件验证，不包含私人论文或投稿邮件；不作为真实期刊规范。
