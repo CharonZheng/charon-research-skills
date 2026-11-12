@@ -1,6 +1,6 @@
 # charon-research-skills
 
-面向实际科研任务的 AI agent skills。当前提供 **journal-submission-prep v0.3.1**，用于期刊投稿、转投和编辑部格式退修。
+面向实际科研任务的 AI agent skills。当前提供 **journal-submission-prep v0.3.2**，用于期刊投稿、转投和编辑部格式退修。
 
 ## 技能用途
 

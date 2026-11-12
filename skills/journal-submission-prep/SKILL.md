@@ -3,7 +3,7 @@ name: journal-submission-prep
 description: Prepare existing research manuscripts for a named journal by finding current official requirements, adapting Word formatting, and assembling submission materials with evidence-backed checks. Use for initial submissions, reformatting for another journal, or editorial technical-check corrections including 投稿格式、转投、技术退修 and 投稿材料准备. Does not choose a journal or write research from scratch.
 license: MIT
 metadata:
-  version: "0.3.1"
+  version: "0.3.2"
 ---
 
 # 期刊投稿格式与材料准备
@@ -41,6 +41,8 @@ python scripts/submission.py check INPUT.docx --profile OUTPUT/requirements.json
 
 审计给出段落索引、文本、样式/标题线索、字段、公式、图像及修订。标题、题注、数字引文结果是线索；方括号数字可能是统计值，需要复核。遇到未接受修订或无法识别的结构，不能将检查描述为完整。
 
+必需或禁止章节的名称与无标题样式的独立段落一致时，结果为待确认；先核实其角色或应用正确标题样式，不能因样式缺失认定章节不存在。
+
 按任务选读 [历史退修案例](references/editorial-cases.md)，检查主文、表格/图注、补充 PDF 与附件，关注图表合计上限、漏引、声明位置、版权和系统信息。历史阈值不作为默认 profile。
 
 先读取本稿已有事实记录、全部指定材料和当前会话的作者答复，按 [事实与提问](references/facts.md) 合并为本稿本地 `manuscript-facts.json`。已确认且无新矛盾的事实复用；不跨稿复用伦理、资助、数据权限等声明。必要问题集中一次询问，附建议措辞，继续完成不依赖答复的工作；相同待答问题不重复发送。作者说“无需伦理”只确认该原话，不据此编造委员会豁免、编号或理由。
@@ -60,6 +62,8 @@ python scripts/submission.py verify INPUT.docx OUTPUT/manuscript.docx --out OUTP
 ```
 
 脚本支持 [命令说明](references/tooling.md) 和 [基础格式质量门槛](references/formatting.md) 中的格式；默认拒绝表格内段落，只有逐段明确 `allow_table:true` 才可调整。支持现有正文、页眉页脚、脚注尾注文字部件；不改引文域或公式内容、不重建表格、不自动重写 styles.xml。拒绝已有输出及源文件覆盖。
+
+自动编号段落允许调整文字和段落格式，保留编号定义及原有段落样式。操作日志中的文字回读通过不代表编号标记通过；逐项核对编号、连续性和标记格式后，按格式说明填写契约目标的 `numbering_review`，否则完整格式检查保持待确认。更换编号段落样式需另行使用能核验编号的编辑方式。
 
 **基础格式必须建立可核验目标，不能凭“看起来一致”完成。** 修改前由 agent 为标题、各级标题、正文、图注、表格、参考文献及页眉脚注等实际存在的角色建立格式表，写明字体（含中西文槽）、字号、倍数或固定行距、段前后间隔、标题级别；需要时加对齐、缩进、粗斜体和分页。每项区分官方要求、作者选择、保留原稿、编辑排版选择，禁止统一套用示例的 Times New Roman/12 pt/双倍行距。
 

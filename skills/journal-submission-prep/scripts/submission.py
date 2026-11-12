@@ -121,7 +121,7 @@ def gate(rule, sources):
 
 
 def section_name(value):
-    return re.sub(r"^\s*\d+(?:\.\d+)*[.\s]+", "", value).strip().casefold()
+    return re.sub(r"^\s*\d+(?:\.\d+)*[.\s]+", "", value).strip().rstrip(':：').strip().casefold()
 
 
 def evaluate(rule, report):
@@ -136,12 +136,20 @@ def evaluate(rule, report):
         c = report["caption_candidates"]
         count = sum(len({i["number"] for i in c[k]}) for k in ("figures", "tables"))
         return "needs_confirmation", {"unique_main_caption_candidates": count, "max": check["max"], "over_limit": count > check["max"], "reason": "Caption candidates are not a verified display-item inventory"}
-    if not headings:
-        return "not_checked", "No reliably styled headings detected"
     if kind in ("required_section", "forbidden_section"):
         found = target in names
+        candidates = [p['index'] for p in paras
+                      if not p['heading_level'] and not p['in_table'] and section_name(p['text']) == target]
+        if not found and candidates:
+            return 'needs_confirmation', {'section': target, 'found_in_styled_headings': False,
+                                           'unstyled_candidates': candidates,
+                                           'reason': 'Standalone text matches the section name; verify its role or apply a heading style'}
+        if not headings:
+            return "not_checked", "No reliably styled headings detected"
         ok = found if kind == "required_section" else not found
         return ("pass" if ok else "fail"), {"section": target, "found_in_styled_headings": found}
+    if not headings:
+        return "not_checked", "No reliably styled headings detected"
     if kind == "section_order":
         expected = [section_name(n) for n in check["sections"]]
         if any(n not in names for n in expected) or any(names.count(n) != 1 for n in expected):
@@ -228,6 +236,15 @@ def format_document(args):
             roots[part] = parse(parts[part])
         if part != 'word/document.xml' and op['kind'] == 'page_margins':
             raise ValueError('Page margins belong to document sections')
+        if op['kind'] == 'paragraph_format':
+            index = op.get('paragraph')
+            if type(index) is int and 0 <= index < len(before_rows[part]):
+                row = before_rows[part][index]
+                if ('numbering_marker_format_not_checked' in row['issues']
+                        and 'style_id' in op['format']
+                        and op['format']['style_id'] != row['paragraph']['style_id']):
+                    # A new paragraph style can remove or replace inherited numbering.
+                    raise ValueError('Changing a numbered paragraph style requires a separate numbering-aware edit')
         apply_operations(roots[part], [op], styles)
     for part, tree in roots.items():
         updates[part] = E.tostring(tree, xml_declaration=True, encoding='UTF-8', standalone=True)
@@ -249,7 +266,7 @@ def format_document(args):
             part = op.get('part', 'word/document.xml')
             if op['kind'] == 'paragraph_format':
                 row = rows[part][op['paragraph']]
-                result = match_format(row, op['format'], op.get('run_exemptions', []))
+                result = match_format(row, op['format'], op.get('run_exemptions', []), check_numbering=False)
                 result['actual'] = row
             else:
                 tree = parse(candidate_parts[part]); section = tree.findall('.//w:sectPr', NS)[op['section']]

@@ -6,6 +6,7 @@ Unresolved themes, conditional table styles and revisions cannot earn a pass.
 from __future__ import annotations
 
 import re
+from datetime import date
 from pathlib import Path
 
 from docx_tools import NS, child, digest, in_table, load, numeric, parse, tag, text
@@ -244,9 +245,28 @@ def same(actual, expected, key):
     return actual == expected
 
 
-def match_format(row, expected, run_exemptions=()):
+def numbering_marker(row, review):
+    numbered = 'numbering_marker_format_not_checked' in row['issues']
+    if not numbered:
+        if review is not None:
+            raise ValueError('Numbering review supplied for a paragraph without detected numbering')
+        return None
+    if review is None:
+        return {'status': 'needs_confirmation', 'method': 'not_checked',
+                'note': 'Text formatting is separate from list-marker typography and sequence'}
+    if not isinstance(review, dict) or review.get('status') not in {'pass', 'fail'}:
+        raise ValueError('Numbering review needs an explicit pass or fail')
+    if not all(isinstance(review.get(key), str) and review[key].strip()
+               for key in ('note', 'reviewer', 'checked_on', 'evidence')):
+        raise ValueError('Numbering review needs note, reviewer, checked_on and evidence location')
+    date.fromisoformat(review['checked_on'])
+    return {'status': review['status'], 'method': 'manual_review', 'review': dict(review)}
+
+
+def match_format(row, expected, run_exemptions=(), *, check_numbering=True, numbering_review=None):
     if not expected or set(expected) - EXPECTED_KEYS:
         raise ValueError("Unknown or empty expected format")
+    marker = numbering_marker(row, numbering_review)
     exempt = {}
     for item in run_exemptions:
         if not item.get('reason') or type(item.get('run')) is not int or not item.get('properties') or set(item['properties']) - RUN_KEYS:
@@ -293,19 +313,24 @@ def match_format(row, expected, run_exemptions=()):
             missing = set(run['fonts']) - {FONT_SLOTS[k] for k in expected if k in FONT_SLOTS}
             if missing:
                 findings.append({'run': run['index'], 'property': 'font_slot_coverage', 'status': 'not_checked', 'uncovered_slots': sorted(missing)})
-    if any(f["status"] == "fail" for f in findings):
+    if any(f["status"] == "fail" for f in findings) or (check_numbering and marker and marker['status'] == 'fail'):
         status = "fail"
     elif any(f["status"] == "not_checked" for f in findings) or not any(f['status'] != 'exempt' for f in findings):
         status = "not_checked"
-    elif any(i in row["issues"] for i in ("conditional_table_style", "unaccepted_revisions", 'missing_style_definition', 'text_box_layout_not_checked', 'numbering_marker_format_not_checked', 'complex_script_override_not_checked')):
+    elif any(i in row["issues"] for i in ("conditional_table_style", "unaccepted_revisions", 'missing_style_definition', 'text_box_layout_not_checked', 'complex_script_override_not_checked')):
         status = "needs_confirmation"
+    elif check_numbering and marker and marker['status'] != 'pass':
+        status = 'needs_confirmation'
     elif any(k in expected for k in ("line_spacing", "line_spacing_pt")) and row["paragraph"]["snap_to_grid"]:
         status = "needs_confirmation"
     elif any(k in expected for k in ("space_before_pt", "space_after_pt")) and row["paragraph"]["contextual_spacing"]:
         status = "needs_confirmation"
     else:
         status = "pass"
-    return {"status": status, "findings": findings, "issues": row["issues"], "paragraph": row["index"]}
+    result = {"status": status, "findings": findings, "issues": row["issues"], "paragraph": row["index"]}
+    if marker is not None:
+        result['numbering_marker'] = marker
+    return result
 
 
 def apply_paragraph(p, fmt, styles_root=None, run_exemptions=()):
@@ -449,7 +474,8 @@ def check_contract(path, contract):
                 raise ValueError("Overlapping format groups")
             covered.add(key)
             results.append({"group": group["id"], "role": group.get("role"), "part": part,
-                            "basis": basis, **match_format(row, expected, target.get('run_exemptions', []))})
+                            "basis": basis, **match_format(row, expected, target.get('run_exemptions', []),
+                                                          numbering_review=target.get('numbering_review'))})
     for target in contract.get("exemptions", []):
         part = target.get("part", "word/document.xml"); index = target["paragraph"]
         if part not in rows or type(index) is not int or not 0 <= index < len(rows[part]) or not target.get("reason"):

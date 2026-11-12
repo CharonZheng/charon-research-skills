@@ -38,7 +38,7 @@ applicability=applicable/not_applicable/unknown，后两者需要 applicability_
 
 | type | 字段 | 自动检查范围 |
 |---|---|---|
-| required_section / forbidden_section | section | 识别到的非表格样式标题，不代表无样式标题不存在 |
+| required_section / forbidden_section | section | 检查非表格样式标题；无样式独立段落与名称一致时待确认，忽略大小写、数字序号和末尾冒号；正文句中提及不视为标题 |
 | section_order | sections 字符串列表 | 每个指定标题仅出现一次时核对顺序 |
 | max_heading_level | max 整数 | 识别标题的层级上限 |
 | max_heading_characters | max；可选 within_section | 含空格及编号；within_section 只计其子标题 |
