@@ -92,3 +92,7 @@ python scripts/doctor.py --mode docx
 原创代码采用 [MIT](LICENSE)。官方要求核验流程改编自 K-Dense 的 venue-templates，其他参考来源和贡献范围见 [来源说明](skills/journal-submission-prep/references/upstream.md)，保留 [第三方许可](skills/journal-submission-prep/THIRD_PARTY_LICENSES.txt)。
 
 本仓库分发使用所需文件。合成测试与示例保留在 [v0.3.0 验证版本](https://github.com/CharonZheng/charon-research-skills/tree/journal-submission-prep-v0.3.0)；该版本的 101 项测试已在 Linux/Windows 六组 CI 中通过，见 [运行记录](https://github.com/CharonZheng/charon-research-skills/actions/runs/43045873033)。
+
+## 致谢
+
+感谢 K-Dense 的 [venue-templates](https://github.com/K-Dense-AI/scientific-agent-skills/tree/a25cf9ec00e2745d03f8704acf6f6919694ccd9a/skills/venue-templates)、[my-submission-formatting-agent](https://github.com/maxwell2732/my-submission-formatting-agent) 和 [manuscript-docx-cleaner](https://github.com/SEUWanglibo/manuscript-docx-cleaner) 为本项目提供的流程与设计参考，具体借鉴范围见[来源说明](skills/journal-submission-prep/references/upstream.md)，相关版权与许可声明已保留。同时，感谢玻尔科学空间对本项目的支持，欢迎科研用户共同参与试用、反馈与完善。
